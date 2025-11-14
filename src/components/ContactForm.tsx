@@ -12,13 +12,47 @@ function ContactForm({ onClose }: ContactFormProps) {
     mobile: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      onClose();
-    }, 2000);
+    setError(null);
+    setLoading(true);
+
+    try {
+      const endpoint = 'https://script.google.com/macros/s/AKfycbyT_DEBoLgl-QJra50is6Mt2p60eCSiCJhXVyE2pOd_QSbCwzrqG7TsaBmkKtbhSXbtvQ/exec';
+
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify({
+          ...formData,
+          timestamp: new Date().toISOString(),
+          source: 'landing:contact_form',
+        }),
+      });
+
+      // Expect Apps Script to return JSON { success: true }
+      const contentType = res.headers.get('content-type') || '';
+      const isJson = contentType.includes('application/json');
+      const data = isJson ? await res.json() : null;
+
+      if (!res.ok || (data && data.success === false)) {
+        throw new Error(data?.message || 'Failed to submit. Please try again.');
+      }
+
+      setSubmitted(true);
+      setTimeout(() => {
+        onClose();
+      }, 2000);
+    } catch (err: any) {
+      setError(err?.message || 'Something went wrong.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -70,11 +104,16 @@ function ContactForm({ onClose }: ContactFormProps) {
         />
       </div>
 
+      {error && (
+        <p className="text-sm text-red-600">{error}</p>
+      )}
+
       <button
         type="submit"
-        className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+        disabled={loading}
+        className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-lg font-semibold hover:from-green-700 hover:to-green-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        Register Now
+        {loading ? 'Submitting...' : 'Register Now'}
       </button>
     </form>
   );

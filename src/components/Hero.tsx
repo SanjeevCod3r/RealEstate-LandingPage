@@ -11,7 +11,7 @@ function Hero({ onRegisterClick }: HeroProps) {
       <div className="container mx-auto px-4 py-20 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-block bg-white bg-opacity-20 backdrop-blur-sm rounded-full px-6 py-2 mb-6">
-            <span className="text-sm font-semibold">SPLS Aawasiya Yojna</span>
+            <img src="/logo-orange.png" alt="Logo" className="h-8 object-contain" />
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
